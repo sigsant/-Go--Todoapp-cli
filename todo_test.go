@@ -44,13 +44,22 @@ func TestCompleteTask(t *testing.T) {
 
 func TestDeleteTask(t *testing.T) {
 	lista.Delete(1)
-	assert.Equal(t, len(lista), 4, "Error en la longitud de la lista")
+	assert.Equal(t, len(lista), 4, "Error on the length of the list")
 }
 
 func TestSaveTask(t *testing.T) {
-	_ = lista.Save("test.json")
+	file, err := os.CreateTemp("", "")
+	if err != nil {
+		t.Fatalf("Error creating temp file, %s", err)
+	}
 
-	_, err := os.Stat("test.json")
-	assert.Nil(t, err, "No se ha encontrado el archivo")
-	_ = os.Remove("test.json")
+	defer os.Remove(file.Name())
+
+	err = lista.Save(file.Name())
+	if err != nil {
+		t.Fatalf("Error saving data to file")
+	}
+
+	_, err = os.Stat(file.Name())
+	assert.Nil(t, err, "File not found")
 }
