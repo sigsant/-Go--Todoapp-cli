@@ -1,21 +1,25 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 
 	"github.com/sigsant/todo"
 )
 
+//	Placeholder for testing
+const filename = "task.json"
+
 func main() {
 
-	fmt.Print("\n\tIntroduce una tarea: ")
-	reader := bufio.NewReader(os.Stdin)
-	text, _ := reader.ReadString('\n')
-	todo.Add(text)
+	list := &todo.List{}
 
-	for i, v := range todo.List {
-		fmt.Printf("\n\t%d. %s", i, v)
+	// Try to read the file. If not it is possible display an error and quit the app
+	if err := list.Read(filename); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
+
+	//	TODO: Considerar las acciones a realizar según si hay parametros al iniciarse el programa
+	//	TODO: Logicamente, traducir los comentarios al inglés a medida que se desarrolle la aplicacion
 }
