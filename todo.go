@@ -2,6 +2,7 @@ package todo
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -54,6 +55,7 @@ func (l *List) Delete(index int) error {
 	return nil
 }
 
+//	Save saves the notes in JSON format
 func (l *List) Save(filename string) error {
 	fileJSON, err := json.MarshalIndent(l, "", " ")
 	if err != nil {
@@ -61,4 +63,22 @@ func (l *List) Save(filename string) error {
 	}
 	os.WriteFile(filename, fileJSON, 0644)
 	return nil
+}
+
+func (l *List) Read(filename string) error {
+	file, err := os.ReadFile(filename)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+
+	//	Ignora el error si el archivo esta vacio
+	if len(filename) == 0 {
+		return nil
+	}
+
+	// Devuelve los datos a partir del struct 'Item'
+	return json.Unmarshal(file, l)
 }
