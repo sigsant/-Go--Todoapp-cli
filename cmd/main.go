@@ -4,9 +4,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/sigsant/todo"
 )
@@ -20,20 +20,40 @@ var list = &todo.List{}
 
 func main() {
 
+	newTask := flag.String("task", "", "Task to be included in the notes")
+	listTask := flag.Bool("list", false, "List all the saved task")
+	isTaskCompleted := flag.Int("complete", 0, "Number of the item to be marked as complete")
+
+	flag.Parse()
+
 	// Try to read the file. If not it is possible display an error and quit the app
 	if err := list.Read(filename); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	switch len(os.Args) {
-	case 1:
+	switch {
+	case *listTask:
 		for i, task := range *list {
 			fmt.Printf("\t%d. %s\n", i, task.Task)
 		}
+	case *isTaskCompleted > 0:
+		if err := list.Complete(*isTaskCompleted); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		if err := list.Save(filename); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	case *newTask != "":
+		list.Add(*newTask)
+		if err := list.Save(filename); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	default:
-		item := strings.Join(os.Args[1:], " ")
-		list.Add(item)
+		fmt.Fprintln(os.Stderr, "Invalid flags (-task)(-list)(-complete)")
 	}
 
 	if err := list.Save(filename); err != nil {

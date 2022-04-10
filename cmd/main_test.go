@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,7 +56,7 @@ func TestCli(t *testing.T) {
 
 	t.Run("Add New Tasks", func(t *testing.T) {
 		// Execute bin file with variadic arguments
-		cmd := exec.Command(cmdPath, strings.Split(dummyTask, " ")...)
+		cmd := exec.Command(cmdPath, "-task", dummyTask)
 
 		// Running test
 
@@ -70,7 +69,7 @@ func TestCli(t *testing.T) {
 
 		expected := "\t0. " + dummyTask + "\n"
 
-		cmd := exec.Command(cmdPath)
+		cmd := exec.Command(cmdPath, "-list")
 		// Expect a return value
 		taskOuput, err := cmd.CombinedOutput()
 
