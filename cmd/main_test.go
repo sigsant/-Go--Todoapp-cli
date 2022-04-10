@@ -14,16 +14,17 @@ import (
 
 var (
 	filenameExecutable = "todo"
-	dummyJSON          = "todo.json"
+	dummyJSON          = "task.json"
 )
 
+//	Similar to @beforeEach in Jest
 func TestMain(m *testing.M) {
 
 	if runtime.GOOS == "windows" {
 		filenameExecutable += ".exe"
 	}
 
-	fmt.Println("Creating file...")
+	fmt.Println("\nCreating file...")
 
 	// Execute "go build" command
 	build := exec.Command("go", "build", "-o", filenameExecutable)
@@ -34,7 +35,9 @@ func TestMain(m *testing.M) {
 	fmt.Println("Running file...")
 	resultRunning := m.Run()
 
+	fmt.Println("Deleting file...")
 	os.Remove(filenameExecutable)
+	os.Remove(dummyJSON)
 	os.Exit(resultRunning)
 }
 
@@ -60,6 +63,19 @@ func TestCli(t *testing.T) {
 
 		err := cmd.Run()
 
-		assert.Nil(t, err, "Not possible to add any task")
+		assert.Nil(t, err, "Unable to add any task")
+	})
+
+	t.Run("List task", func(t *testing.T) {
+
+		expected := "\t0. " + dummyTask + "\n"
+
+		cmd := exec.Command(cmdPath)
+		// Expect a return value
+		taskOuput, err := cmd.CombinedOutput()
+
+		assert.Nil(t, err, "Unable to list any task")
+		assert.Equal(t, expected, string(taskOuput))
+
 	})
 }
