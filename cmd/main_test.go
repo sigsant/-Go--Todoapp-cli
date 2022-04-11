@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -75,6 +76,17 @@ func TestCli(t *testing.T) {
 
 		assert.Nil(t, err, "Unable to list any task")
 		assert.Equal(t, expected, string(taskOuput))
+	})
 
+	t.Run("Complete task", func(t *testing.T) {
+		indexTask := strconv.Itoa(0)
+		cmd := exec.Command(cmdPath, "-complete", indexTask)
+
+		err := cmd.Run()
+
+		assert.Nil(t, err, "Unable to change Completed as true")
+		for _, v := range *list {
+			assert.True(t, v.Completed)
+		}
 	})
 }
