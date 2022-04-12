@@ -68,7 +68,7 @@ func TestCli(t *testing.T) {
 
 	t.Run("List task", func(t *testing.T) {
 
-		expected := "\t0. " + dummyTask + "\n"
+		expected := "\t[ ] 1: " + dummyTask + "\n"
 
 		cmd := exec.Command(cmdPath, "-list")
 		// Expect a return value
