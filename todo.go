@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+var (
+	logFile, _    = os.Create("debug.log")
+	LoggerHandler = log.New(logFile, "Info:", log.LstdFlags|log.Lshortfile)
+)
+
 type item struct {
 	Task        string
 	Completed   bool
@@ -18,9 +23,20 @@ type item struct {
 
 type List []item
 
-var logFile, _ = os.Create("debug.log")
+func (l *List) String() string {
+	text := ""
+	for i, value := range *l {
+		// Initial prefix is blank brackets
+		completeCheck := "[ ] "
 
-var LoggerHandler = log.New(logFile, "Info:", log.LstdFlags|log.Lshortfile)
+		if value.Completed {
+			completeCheck = "[X] "
+		}
+		text += fmt.Sprintf("\t%s%d: %s\n", completeCheck, i+1, value.Task)
+	}
+
+	return text
+}
 
 //	Add an item to the task list
 func (l *List) Add(task string) {
@@ -39,12 +55,12 @@ func (l *List) Complete(index int) error {
 	list := *l
 	// Error si el dato introducido no es positivo o sobrepasa la longitud de la lista
 	if index < 0 || index > len(list) {
+		LoggerHandler.Printf("Unable to update: %d not exist in JSON", index)
 		return fmt.Errorf("There is no item in position %d", index)
 	}
 
 	list[index-1].Completed = true
 	list[index-1].CompletedAt = time.Now()
-	LoggerHandler.Println("Task changed")
 
 	return nil
 }
@@ -53,11 +69,11 @@ func (l *List) Complete(index int) error {
 func (l *List) Delete(index int) error {
 	list := *l
 	if index < 0 || index > len(list) {
+		LoggerHandler.Printf("Unable to delete: %d not exist in JSON", index)
 		return fmt.Errorf("There is no item in position %d", index)
 	}
 	//	Reacomoda la capacidad del slice
 	*l = append(list[:index-1], list[index:]...)
-	LoggerHandler.Println("Task deleted!")
 	return nil
 }
 
@@ -68,8 +84,6 @@ func (l *List) Save(filename string) error {
 		return err
 	}
 	os.WriteFile(filename, fileJSON, 0644)
-	LoggerHandler.Println("File saved!")
-
 	return nil
 }
 
@@ -77,7 +91,7 @@ func (l *List) Read(filename string) error {
 	file, err := os.ReadFile(filename)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			LoggerHandler.Println("JSON not exist")
+			LoggerHandler.Println("JSON doesn't exist")
 			return nil
 		}
 		return err
@@ -90,6 +104,5 @@ func (l *List) Read(filename string) error {
 	}
 
 	// Devuelve los datos a partir del struct 'Item'
-	LoggerHandler.Println("Read file done")
 	return json.Unmarshal(file, l)
 }
