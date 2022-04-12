@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"time"
 )
@@ -16,6 +17,10 @@ type item struct {
 }
 
 type List []item
+
+var logFile, _ = os.Create("debug.log")
+
+var LoggerHandler = log.New(logFile, "Info:", log.LstdFlags|log.Lshortfile)
 
 //	Add an item to the task list
 func (l *List) Add(task string) {
@@ -32,14 +37,14 @@ func (l *List) Add(task string) {
 //	Complete marks a task as complete (at x time)
 func (l *List) Complete(index int) error {
 	list := *l
-
 	// Error si el dato introducido no es positivo o sobrepasa la longitud de la lista
 	if index < 0 || index > len(list) {
 		return fmt.Errorf("There is no item in position %d", index)
 	}
 
-	list[index].Completed = true
-	list[index].CompletedAt = time.Now()
+	list[index-1].Completed = true
+	list[index-1].CompletedAt = time.Now()
+	LoggerHandler.Println("Task changed")
 
 	return nil
 }
@@ -52,6 +57,7 @@ func (l *List) Delete(index int) error {
 	}
 	//	Reacomoda la capacidad del slice
 	*l = append(list[:index-1], list[index:]...)
+	LoggerHandler.Println("Task deleted!")
 	return nil
 }
 
@@ -62,6 +68,8 @@ func (l *List) Save(filename string) error {
 		return err
 	}
 	os.WriteFile(filename, fileJSON, 0644)
+	LoggerHandler.Println("File saved!")
+
 	return nil
 }
 
@@ -69,6 +77,7 @@ func (l *List) Read(filename string) error {
 	file, err := os.ReadFile(filename)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
+			LoggerHandler.Println("JSON not exist")
 			return nil
 		}
 		return err
@@ -76,9 +85,11 @@ func (l *List) Read(filename string) error {
 
 	//	Ignora el error si el archivo esta vacio
 	if len(filename) == 0 {
+		LoggerHandler.Println("Empty JSON")
 		return nil
 	}
 
 	// Devuelve los datos a partir del struct 'Item'
+	LoggerHandler.Println("Read file done")
 	return json.Unmarshal(file, l)
 }
