@@ -41,9 +41,7 @@ func main() {
 
 	switch {
 	case *listTask:
-		for i, task := range *list {
-			fmt.Printf("\t%d. %s\n", i+1, task.Task)
-		}
+		fmt.Print(list)
 	case *isTaskCompleted > 0:
 		if err := list.Complete(*isTaskCompleted); err != nil {
 			fmt.Fprintln(os.Stderr, err)
